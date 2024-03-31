@@ -7,6 +7,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=db_trasaction
+    healthcheck:
+       test: ["CMD", "mysqladmin", "ping", "-h", "localhost","--silent"]
     ports:
       - 3307:3306
     volumes:
@@ -16,7 +18,8 @@ services:
      context: .
      dockerfile: Dockerfile
     depends_on:
-      - mysqldb
+      mysqldb:
+       condition: service_healthy
     image: trsacation-service:1.0
     ports:
       - 9090:9090

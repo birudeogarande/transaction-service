@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  mysql-db:
+     image: mysql:latest
+     restart: unless-stopped
+     env_file:
+       - path: .env
+     ports:
+       - 3307:3306
+     environment:
+        - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        - MYSQL_DATABASE=${DB_NAME}
+     healthcheck:
+              test: 
+                - CMD
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+                - --silent
+     volumes:
+          - db:/var/lib/mysql
+ 
+  trasaction-service:
+        build:
+          context: .
+          dockerfile: Dockerfile
+        depends_on:
+         mysql-db:
+             condition: service_healthy
+        image: ${IMAGE_NAME}:${TAG}
+        ports:
+           - 9090:9090
+        environment:
+           SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-db:3306/db_trasaction"
+           SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+           SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+        volumes:
+          - .m2:/root/.m2
+volumes:
+   db:
+         
